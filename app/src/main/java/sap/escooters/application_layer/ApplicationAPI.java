@@ -1,6 +1,7 @@
 package sap.escooters.application_layer;
 
 import io.vertx.core.json.JsonObject;
+import sap.escooters.application_layer.exceptions.*;
 
 public interface ApplicationAPI  {
 	

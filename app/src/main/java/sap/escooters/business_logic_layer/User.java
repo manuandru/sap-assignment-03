@@ -4,42 +4,42 @@ import io.vertx.core.json.JsonObject;
 
 public class User {
 
-	private String id;
-	private String name;
-	private String surname;
+	private final String id;
+	private final String name;
+	private final String surname;
 	
 	
-	public User(String id, String name, String surname) {
+	public User(final String id, final String name, final String surname) {
 		this.id = id;
 		this.name = name;
 		this.surname = surname;
 	}
 	
 	public String getId() {
-		return id;
+		return this.id;
 	}
 	
 	public String getName() {
-		return name;
+		return this.name;
 	}
 	
 	public String getSurname() {
-		return surname;
+		return this.surname;
 	}
 	
 	public void save() {
 		try {
-			DomainModelImpl.getDataSourcePort().saveUser(toJson());
-		} catch (Exception ex) {
+			DomainModelImpl.getDataSourcePort().saveUser(this.toJson());
+		} catch (final Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
 	public JsonObject toJson() {
-		JsonObject userObj = new JsonObject();
-		userObj.put("id", id);
-		userObj.put("name", name);
-		userObj.put("surname", surname);			
+		final JsonObject userObj = new JsonObject();
+		userObj.put("id", this.id);
+		userObj.put("name", this.name);
+		userObj.put("surname", this.surname);
 		return userObj;
 	}
 	

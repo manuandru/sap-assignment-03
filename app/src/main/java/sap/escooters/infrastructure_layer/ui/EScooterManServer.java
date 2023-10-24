@@ -4,39 +4,34 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.*;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
-import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
-import io.vertx.ext.web.handler.sockjs.SockJSSocket;
 import sap.escooters.application_layer.*;
+import sap.escooters.application_layer.exceptions.*;
 
 public class EScooterManServer extends AbstractVerticle implements RideDashboardPort {
 
-	private int port;
-	private ApplicationAPI appAPI;
+	private final int port;
+	private final ApplicationAPI appAPI;
     static Logger logger = Logger.getLogger("[EScooter Server]");	
 
-	public EScooterManServer(int port, ApplicationAPI appAPI) {
+	public EScooterManServer(final int port, final ApplicationAPI appAPI) {
 		this.port = port;
 		this.appAPI = appAPI;
-		logger.setLevel(Level.INFO);
+        EScooterManServer.logger.setLevel(Level.INFO);
 	}
 	
 	
 	public void start() {
-		logger.log(Level.INFO, "EScooterMan server initializing...");
-		HttpServer server = vertx.createHttpServer();
-		Router router = Router.router(vertx);
+        EScooterManServer.logger.log(Level.INFO, "EScooterMan server initializing...");
+		final HttpServer server = this.vertx.createHttpServer();
+		final Router router = Router.router(this.vertx);
 
 		/* static files by default searched in "webroot" directory */
 		router.route("/static/*").handler(StaticHandler.create().setCachingEnabled(false));
@@ -51,15 +46,15 @@ public class EScooterManServer extends AbstractVerticle implements RideDashboard
 		router.route(HttpMethod.POST, "/api/rides/:rideId/end").handler(this::endRide);
 		
 		server.webSocketHandler(webSocket -> {
-			  logger.log(Level.INFO, "Ride monitoring request: " + webSocket.path());
+            EScooterManServer.logger.log(Level.INFO, "Ride monitoring request: " + webSocket.path());
 			  
-			  if (webSocket.path().equals("/api/rides/monitoring")) {
+			  if ("/api/rides/monitoring".equals(webSocket.path())) {
 				webSocket.accept();
-				logger.log(Level.INFO, "New ride monitoring observer registered.");
-		    	EventBus eb = vertx.eventBus();
+                  EScooterManServer.logger.log(Level.INFO, "New ride monitoring observer registered.");
+		    	final EventBus eb = this.vertx.eventBus();
 		    	eb.consumer("ride-events", msg -> {
-		    		JsonObject ev = (JsonObject) msg.body();
-			    	logger.log(Level.INFO, "Changes in rides: " + ev.encodePrettily());
+		    		final JsonObject ev = (JsonObject) msg.body();
+                    EScooterManServer.logger.log(Level.INFO, "Changes in rides: " + ev.encodePrettily());
 		    		webSocket.writeTextMessage(ev.encodePrettily());
 		    	});
 		    	/*
@@ -67,7 +62,7 @@ public class EScooterManServer extends AbstractVerticle implements RideDashboard
 					
 				});*/
 			  } else {
-				  logger.log(Level.INFO, "Ride monitoring observer rejected.");
+                  EScooterManServer.logger.log(Level.INFO, "Ride monitoring observer rejected.");
 				  webSocket.reject();
 			  }
 			});		
@@ -76,128 +71,128 @@ public class EScooterManServer extends AbstractVerticle implements RideDashboard
 		
 		server
 		.requestHandler(router)
-		.listen(port);
+		.listen(this.port);
 
-		logger.log(Level.INFO, "EScooterMan server ready - port: " + port);
+        EScooterManServer.logger.log(Level.INFO, "EScooterMan server ready - port: " + this.port);
 	}
 	
-	protected void registerNewUser(RoutingContext context) {
-		logger.log(Level.INFO, "New registration user request - " + context.currentRoute().getPath());
-		JsonObject userInfo = context.body().asJsonObject();
-		logger.log(Level.INFO, "Body: " + userInfo.encodePrettily());
+	protected void registerNewUser(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "New registration user request - " + context.currentRoute().getPath());
+		final JsonObject userInfo = context.body().asJsonObject();
+        EScooterManServer.logger.log(Level.INFO, "Body: " + userInfo.encodePrettily());
 		
-		String id = userInfo.getString("id");
-		String name = userInfo.getString("name");
-		String surname = userInfo.getString("surname");
+		final String id = userInfo.getString("id");
+		final String name = userInfo.getString("name");
+		final String surname = userInfo.getString("surname");
 		
-		JsonObject reply = new JsonObject();
+		final JsonObject reply = new JsonObject();
 		try {
-			appAPI.registerNewUser(id, name, surname);
+            this.appAPI.registerNewUser(id, name, surname);
 			reply.put("result", "ok");
-		} catch (UserIdAlreadyExistingException ex) {
+		} catch (final UserIdAlreadyExistingException ex) {
 			reply.put("result", "user-id-already-existing");
 		}
-		sendReply(context, reply); 	
+        this.sendReply(context, reply);
 	}
 	
-	protected void getUserInfo(RoutingContext context) {
-		logger.log(Level.INFO, "New user info request: " + context.currentRoute().getPath());
-	    String userId = context.pathParam("userId");
-		JsonObject reply = new JsonObject();
+	protected void getUserInfo(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "New user info request: " + context.currentRoute().getPath());
+	    final String userId = context.pathParam("userId");
+		final JsonObject reply = new JsonObject();
 		try {
-			JsonObject info = appAPI.getUserInfo(userId);
+			final JsonObject info = this.appAPI.getUserInfo(userId);
 			reply.put("result", "ok");
 			reply.put("user", info);
-		} catch (UserNotFoundException ex) {
+		} catch (final UserNotFoundException ex) {
 			reply.put("result", "user-not-found");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 
-	protected void registerNewEScooter(RoutingContext context) {
-		logger.log(Level.INFO, "new EScooter registration request: " + context.currentRoute().getPath());
-		JsonObject escooterInfo = context.body().asJsonObject();
-		logger.log(Level.INFO, "Body: " + escooterInfo.encodePrettily());
+	protected void registerNewEScooter(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "new EScooter registration request: " + context.currentRoute().getPath());
+		final JsonObject escooterInfo = context.body().asJsonObject();
+        EScooterManServer.logger.log(Level.INFO, "Body: " + escooterInfo.encodePrettily());
 		
-		String id = escooterInfo.getString("id");
+		final String id = escooterInfo.getString("id");
 		
-		JsonObject reply = new JsonObject();
+		final JsonObject reply = new JsonObject();
 		try {
-			appAPI.registerNewEScooter(id);
+            this.appAPI.registerNewEScooter(id);
 			reply.put("result", "ok");
-		} catch (UserIdAlreadyExistingException ex) {
+		} catch (final UserIdAlreadyExistingException ex) {
 			reply.put("result", "escooter-id-already-existing");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 
-	protected void getEScooterInfo(RoutingContext context) {
-		logger.log(Level.INFO, "New escooter info request: " + context.currentRoute().getPath());
-	    String escooterId = context.pathParam("escooterId");
-		JsonObject reply = new JsonObject();
+	protected void getEScooterInfo(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "New escooter info request: " + context.currentRoute().getPath());
+	    final String escooterId = context.pathParam("escooterId");
+		final JsonObject reply = new JsonObject();
 		try {
-			JsonObject info = appAPI.getEScooterInfo(escooterId);
+			final JsonObject info = this.appAPI.getEScooterInfo(escooterId);
 			reply.put("result", "ok");
 			reply.put("escooter", info);
-		} catch (EScooterNotFoundException ex) {
+		} catch (final EScooterNotFoundException ex) {
 			reply.put("result", "escooter-not-found");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 	
-	protected void startNewRide(RoutingContext context) {
-		logger.log(Level.INFO, "Start new ride request: " + context.currentRoute().getPath());
-		JsonObject rideInfo = context.body().asJsonObject();
-		logger.log(Level.INFO, "Body: " + rideInfo.encodePrettily());
+	protected void startNewRide(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "Start new ride request: " + context.currentRoute().getPath());
+		final JsonObject rideInfo = context.body().asJsonObject();
+        EScooterManServer.logger.log(Level.INFO, "Body: " + rideInfo.encodePrettily());
 		
-		String userId = rideInfo.getString("userId");
-		String escooterId = rideInfo.getString("escooterId");
+		final String userId = rideInfo.getString("userId");
+		final String escooterId = rideInfo.getString("escooterId");
 		
-		JsonObject reply = new JsonObject();
+		final JsonObject reply = new JsonObject();
 		try {
-			String rideId = appAPI.startNewRide(userId, escooterId);
+			final String rideId = this.appAPI.startNewRide(userId, escooterId);
 			reply.put("result", "ok");
 			reply.put("rideId", rideId);
-		} catch (Exception  ex) {
+		} catch (final Exception  ex) {
 			reply.put("result", "start-new-ride-failed");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 	
-	protected void getRideInfo(RoutingContext context) {
-		String rideId = context.pathParam("rideId");
-		JsonObject reply = new JsonObject();
+	protected void getRideInfo(final RoutingContext context) {
+		final String rideId = context.pathParam("rideId");
+		final JsonObject reply = new JsonObject();
 		try {
-			JsonObject info = appAPI.getRideInfo(rideId);
+			final JsonObject info = this.appAPI.getRideInfo(rideId);
 			reply.put("result", "ok");
 			reply.put("ride", info);
-		} catch (RideNotFoundException ex) {
+		} catch (final RideNotFoundException ex) {
 			reply.put("result", "ride-not-found");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 
-	protected void endRide(RoutingContext context) {
-		logger.log(Level.INFO, "End ride request: " + context.currentRoute().getPath());
-	    String rideId = context.pathParam("rideId");
-		JsonObject reply = new JsonObject();
+	protected void endRide(final RoutingContext context) {
+        EScooterManServer.logger.log(Level.INFO, "End ride request: " + context.currentRoute().getPath());
+	    final String rideId = context.pathParam("rideId");
+		final JsonObject reply = new JsonObject();
 		try {
-			appAPI.endRide(rideId);
+            this.appAPI.endRide(rideId);
 			reply.put("result", "ok");
-		} catch (RideNotFoundException ex) {
+		} catch (final RideNotFoundException ex) {
 			reply.put("result", "ride-not-found");
-		} catch (RideAlreadyEndedException ex) {
+		} catch (final RideAlreadyEndedException ex) {
 			reply.put("result", "ride-already-ended");
 		}
-		sendReply(context, reply);
+        this.sendReply(context, reply);
 	}
 	
 	@Override
-	public void notifyNumOngoingRidesChanged(int nOngoingRides) {
-		logger.log(Level.INFO, "notify num rides changed");
-		EventBus eb = vertx.eventBus();
+	public void notifyNumOngoingRidesChanged(final int nOngoingRides) {
+        EScooterManServer.logger.log(Level.INFO, "notify num rides changed");
+		final EventBus eb = this.vertx.eventBus();
 		
-		JsonObject obj = new JsonObject();
+		final JsonObject obj = new JsonObject();
 		obj.put("event", "num-ongoing-rides-changed");
 		obj.put("nOngoingRides", nOngoingRides);
 		
@@ -205,8 +200,8 @@ public class EScooterManServer extends AbstractVerticle implements RideDashboard
 	}
 	
 		
-	private void sendReply(RoutingContext request, JsonObject reply) {
-		HttpServerResponse response = request.response();
+	private void sendReply(final RoutingContext request, final JsonObject reply) {
+		final HttpServerResponse response = request.response();
 		response.putHeader("content-type", "application/json");
 		response.end(reply.toString());
 	}

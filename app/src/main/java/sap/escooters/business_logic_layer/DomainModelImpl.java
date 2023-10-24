@@ -5,79 +5,77 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import sap.escooters.business_logic_layer.EScooter.EScooterState;
-
 public class DomainModelImpl implements DomainModel {
 
-	static private DataSourcePort dataSourcePort;
+	private static DataSourcePort dataSourcePort;
 	
-	private HashMap<String, User> users;
-	private HashMap<String, EScooter> escooters;
-	private HashMap<String, Ride> rides;
+	private final HashMap<String, User> users;
+	private final HashMap<String, EScooter> escooters;
+	private final HashMap<String, Ride> rides;
 	private int rideCounter;
     static Logger logger = Logger.getLogger("[DomainModel]");	
 	
 	public DomainModelImpl() {
-		users = new HashMap<String, User>();
-		escooters = new HashMap<String, EScooter>();
-		rides = new HashMap<String, Ride>();
+        this.users = new HashMap<String, User>();
+        this.escooters = new HashMap<String, EScooter>();
+        this.rides = new HashMap<String, Ride>();
 	}
 	
-	public void init(DataSourcePort port) {
-		this.dataSourcePort = port;
-		rideCounter = 0;
+	public void init(final DataSourcePort port) {
+        DomainModelImpl.dataSourcePort = port;
+        this.rideCounter = 0;
 	}
 	
 	public static DataSourcePort getDataSourcePort() {
-		return dataSourcePort;
+		return DomainModelImpl.dataSourcePort;
 	}
 	
 	@Override
-	public void addNewUser(String id, String name, String surname) {
-		User user = new User(id, name, surname);
-		users.put(id, user);				
+	public void addNewUser(final String id, final String name, final String surname) {
+		final User user = new User(id, name, surname);
+        this.users.put(id, user);
 		user.save();
-		logger.log(Level.INFO, "New user registered: " + id);
+        DomainModelImpl.logger.log(Level.INFO, "New user registered: " + id);
 	}
 
 	@Override
-	public void addNewEScooter(String id) {
-		EScooter escooter = new EScooter(id);
-		escooters.put(id, escooter);				
+	public void addNewEScooter(final String id) {
+		final EScooter escooter = new EScooter(id);
+        this.escooters.put(id, escooter);
 		escooter.save();
-		logger.log(Level.INFO, "New escooter registered: " + id);
+        DomainModelImpl.logger.log(Level.INFO, "New escooter registered: " + id);
 	}
 	
 	@Override
-	public String startNewRide(User user, EScooter escooter) {
-		escooter.updateState(EScooterState.IN_USE);
-		rideCounter++;
-		String rideId = "ride-" + rideCounter;		
-		Ride ride = new Ride(rideId, user, escooter);
-		rides.put(rideId, ride);				
+	public String startNewRide(final User user, final EScooter escooter) {
+		escooter.updateState(EScooter.EScooterState.IN_USE);
+        this.rideCounter++;
+		final String rideId = "ride-" + this.rideCounter;
+		final Ride ride = new Ride(rideId, user, escooter);
+        this.rides.put(rideId, ride);
 		escooter.save();
-		ride.save();		
-		logger.log(Level.INFO, "Started ride: " + rideId);
+		ride.save();
+        DomainModelImpl.logger.log(Level.INFO, "Started ride: " + rideId);
 		return rideId;
 	}
 
 	@Override
-	public Optional<User> getUser(String userId) {
-		return Optional.ofNullable(users.get(userId));
+	public Optional<User> getUser(final String userId) {
+		return Optional.ofNullable(this.users.get(userId));
 	}
 
 	@Override
-	public Optional<EScooter> getEScooter(String id) {
-		return Optional.ofNullable(escooters.get(id));
+	public Optional<EScooter> getEScooter(final String id) {
+		return Optional.ofNullable(this.escooters.get(id));
 	}
 
 	@Override
-	public Optional<Ride> getRide(String id) {
-		return Optional.ofNullable(rides.get(id));
+	public Optional<Ride> getRide(final String id) {
+		return Optional.ofNullable(this.rides.get(id));
 	}
 
 	@Override
 	public int getNumOnoingRides() {
-		return rideCounter;
+		return this.rideCounter;
 	}
 }

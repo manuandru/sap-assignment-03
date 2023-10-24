@@ -7,67 +7,67 @@ import io.vertx.core.json.JsonObject;
 
 public class Ride {
 
-	private Date startedDate;
+	private final Date startedDate;
 	private Optional<Date> endDate;
-	private User user;
-	private EScooter scooter;
+	private final User user;
+	private final EScooter scooter;
 	private boolean ongoing;
-	private String id;
+	private final String id;
 	
-	public Ride(String id, User user, EScooter scooter) {
+	public Ride(final String id, final User user, final EScooter scooter) {
 		this.id = id;
-		this.startedDate = new Date();
-		this.endDate = Optional.empty();
+		startedDate = new Date();
+		endDate = Optional.empty();
 		this.user = user;
 		this.scooter = scooter;
-		ongoing = true;
+        this.ongoing = true;
 	}
 	
 	public String getId() {
-		return id;
+		return this.id;
 	}
 	
 	public void end() {
-		endDate = Optional.of(new Date());
-		ongoing = false;
-		save();
+        this.endDate = Optional.of(new Date());
+        this.ongoing = false;
+        this.save();
 	}
 
 	public Date getStartedDate() {
-		return startedDate;
+		return this.startedDate;
 	}
 
 	public boolean isOngoing() {
-		return this.ongoing;
+		return ongoing;
 	}
 	
 	public Optional<Date> getEndDate() {
-		return endDate;
+		return this.endDate;
 	}
 
 	public User getUser() {
-		return user;
+		return this.user;
 	}
 
 	public EScooter getEScooter() {
-		return scooter;
+		return this.scooter;
 	}
 	
 	public void save() {
 		try {
-			DomainModelImpl.getDataSourcePort().saveRide(toJson());
-		} catch (Exception ex) {
+			DomainModelImpl.getDataSourcePort().saveRide(this.toJson());
+		} catch (final Exception ex) {
 			ex.printStackTrace();
 		}
 	}
 	
 	public JsonObject toJson() {
-		JsonObject rideObj = new JsonObject();
-		rideObj.put("id", this.getId());
-		rideObj.put("userId", this.getUser().getId());
-		rideObj.put("escooterId", this.getEScooter().getId());
-		rideObj.put("startDate", this.getStartedDate().toString());
-		Optional<Date> endDate = this.getEndDate();
+		final JsonObject rideObj = new JsonObject();
+		rideObj.put("id", id);
+		rideObj.put("userId", user.getId());
+		rideObj.put("escooterId", scooter.getId());
+		rideObj.put("startDate", startedDate.toString());
+		final Optional<Date> endDate = endDate;
 		
 		if (endDate.isPresent()) {
 			rideObj.put("endDate", endDate.get().toString());			

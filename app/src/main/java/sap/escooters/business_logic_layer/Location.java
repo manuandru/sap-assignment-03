@@ -1,19 +1,20 @@
 package sap.escooters.business_logic_layer;
 
 public class Location {
-	private double latitude, longitude;
+	private final double latitude;
+    private final double longitude;
 	
-	public Location(double lat, double lon) {
-		this.latitude = lat;
-		this.longitude = lon;
+	public Location(final double lat, final double lon) {
+		latitude = lat;
+		longitude = lon;
 	}
 	
 	public double getLatitude() {
-		return latitude;
+		return this.latitude;
 	}
 
 	public double getLongitude() {
-		return longitude;
+		return this.longitude;
 	}
 
 }

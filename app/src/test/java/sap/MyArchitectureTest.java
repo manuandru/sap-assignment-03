@@ -9,9 +9,9 @@ import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 public class MyArchitectureTest {
     @Test
     public void some_architecture_rule() {
-    	JavaClasses importedClasses = new ClassFileImporter().importPackages("sap.escooters");
+    	final JavaClasses importedClasses = new ClassFileImporter().importPackages("sap.escooters");
 
-    	ArchRule ruleLayered = layeredArchitecture()
+    	final ArchRule ruleLayered = layeredArchitecture()
         .consideringAllDependencies()
         .layer("DataSource").definedBy("..data_source_layer..")
         .layer("Domain").definedBy("..domain_layer..")

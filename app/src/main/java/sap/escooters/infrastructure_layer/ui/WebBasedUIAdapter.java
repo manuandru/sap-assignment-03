@@ -6,21 +6,21 @@ import sap.escooters.application_layer.*;
 
 public class WebBasedUIAdapter implements RideDashboardPort {
     static Logger logger = Logger.getLogger("[EScooter Server]");	
-	private int port;
+	private final int port;
 	private EScooterManServer server;
 	
-	public WebBasedUIAdapter(int port) {	
+	public WebBasedUIAdapter(final int port) {
 		this.port = port;
 	}
 		
-	public void init(ApplicationAPI appAPI) {
-    	Vertx vertx = Vertx.vertx();
-		this.server = new EScooterManServer(port, appAPI);
-		vertx.deployVerticle(server);		
+	public void init(final ApplicationAPI appAPI) {
+    	final Vertx vertx = Vertx.vertx();
+		server = new EScooterManServer(this.port, appAPI);
+		vertx.deployVerticle(this.server);
 	}
 
 	@Override
-	public void notifyNumOngoingRidesChanged(int nOngoingRides) {
-		server.notifyNumOngoingRidesChanged(nOngoingRides);
+	public void notifyNumOngoingRidesChanged(final int nOngoingRides) {
+        this.server.notifyNumOngoingRidesChanged(nOngoingRides);
 	}
 }

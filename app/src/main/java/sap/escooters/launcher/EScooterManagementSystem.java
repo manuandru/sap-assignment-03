@@ -10,18 +10,16 @@ import sap.escooters.infrastructure_layer.ui.WebBasedUIAdapter;
 
 public class EScooterManagementSystem {
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
 
-    	FileSystemAdapter dataSourceAdapter = new FileSystemAdapter("dbase");
-    	DomainModelImpl domainLayer = new DomainModelImpl();
-    	ApplicationLayerImpl appLayer = new ApplicationLayerImpl();
-    	WebBasedUIAdapter ui = new WebBasedUIAdapter(8081);
-    	
+    	final FileSystemAdapter dataSourceAdapter = new FileSystemAdapter("dbase");
+    	final DomainModelImpl domainLayer = new DomainModelImpl();
+    	final ApplicationLayerImpl appLayer = new ApplicationLayerImpl();
+    	final WebBasedUIAdapter ui = new WebBasedUIAdapter(8081);
+
     	dataSourceAdapter.init();
     	domainLayer.init(dataSourceAdapter);
     	appLayer.init(domainLayer, ui);
     	ui.init(appLayer);
-    			
-    	
     }
 }

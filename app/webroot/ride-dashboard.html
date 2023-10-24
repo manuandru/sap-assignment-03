@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <title>EScooterSystem - Ride Dashboard</title>
-   
+
   </head>
   <body>
     <h2>EScooterSystem - Ride Dashboard</h2>
-      
+
     <p>
       <label>User id:</label><br>
       <input type="text" id="userId" value="aricci"><br><br>
@@ -15,7 +15,7 @@
       <input type="text" id="escooterId" value="escooter-01"><br><br>
       <button id="startRide">Start Ride</button> <br>
       <p id="startRideResult"></p>
-    </p> 
+    </p>
     <br><br>
     <p>
       <label>Ride id:</label><br>
@@ -53,8 +53,8 @@
           {
             userId: document.getElementById("userId").value,
             escooterId: document.getElementById("escooterId").value,
-          })
-        
+          });
+
         if (reply.result=='ok'){
           document.getElementById("startRideResult").innerHTML = "OK - ride id " + reply.rideId;
         } else {
@@ -64,10 +64,10 @@
 
       document.getElementById("startRide").addEventListener("click", () => {
         startRideRequest();
-      })
+      });
 
       async function endRideRequest(rideId){
-        const reply = await postData("http://localhost:8081/api/rides/"+rideId+"/end",{})
+        const reply = await postData("http://localhost:8081/api/rides/"+rideId+"/end",{});
         console.log(reply);
         if (reply.result=='ok'){
           document.getElementById("endRideResult").innerHTML = "OK - ride ended. ";
@@ -78,7 +78,7 @@
 
       document.getElementById("endRide").addEventListener("click", () => {
         endRideRequest(document.getElementById("rideId").value);
-      })
+      });
 
       const rideMonitoringSocket = new WebSocket("ws://localhost:8081/api/rides/monitoring");
       rideMonitoringSocket.onmessage = (event) => {
